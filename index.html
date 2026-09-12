@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>মাল্টি-ক্যালকুলেটর (বয়স ও ডেট-টাইম)</title>
+  <!-- Nikosh Font & Font Awesome Icons -->
+  <link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Nikosh', 'Kalpurush', Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    /* হোম বাটন স্টাইল */
+    .top-bar {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #e2e8f0;
+      color: #334155;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-home:hover {
+      background: #4f46e5;
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    /* ট্যাব মেনু স্টাইল */
+    .tab-header {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: #4f46e5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h2 {
+      color: #1e293b;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: #334155;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* কাস্টম পিকিং রাপার */
+    .picker-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .picker-wrapper input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 16px;
+      color: #1e293b;
+      outline: none;
+      background-color: #f8fafc;
+      padding-right: 40px;
+    }
+
+    .picker-wrapper input[type="date"],
+    .picker-wrapper input[type="datetime-local"] {
+      position: absolute;
+      right: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .picker-wrapper .cal-icon {
+      position: absolute;
+      right: 14px;
+      color: #64748b;
+      pointer-events: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+    }
+
+    .result-container {
+      margin-top: 20px;
+      display: none;
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    .result-header {
+      font-size: 16px;
+      color: #64748b;
+      margin-bottom: 10px;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .result-box {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 6px;
+      text-align: center;
+    }
+
+    .result-box .number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    .result-box .label {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .detailed-results {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      color: #334155;
+    }
+
+    .detailed-results p {
+      margin-bottom: 8px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .detailed-results p:last-child {
+      margin-bottom: 0;
+    }
+
+    .detailed-results p strong {
+      font-size: 22px;
+      color: #4f46e5;
+    }
+
+    .calendars-wrapper {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .dots-separator {
+      font-size: 20px;
+      color: #64748b;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .mini-calendar {
+      width: 220px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      font-family: Arial, sans-serif;
+    }
+
+    .mini-calendar .cal-title {
+      background: #e2e8f0;
+      text-align: center;
+      padding: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    .mini-calendar table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    .mini-calendar th {
+      background: #1e56a0;
+      color: #ffffff;
+      font-size: 12px;
+      padding: 4px 0;
+      font-weight: bold;
+    }
+
+    .mini-calendar td {
+      font-size: 13px;
+      padding: 4px 0;
+      color: #475569;
+      border: 1px solid #f1f5f9;
+    }
+
+    .mini-calendar td.highlight {
+      background-color: #facc15;
+      font-weight: bold;
+      color: #000;
+    }
+
+    /* প্রস্তুতকারক সেকশন (Footer Style) */
+    .author-card {
+      margin-top: 25px;
+      padding: 14px;
+      background: #f1f5f9;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .author-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .author-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .author-mobile {
+      margin-top: 6px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- হোম বাটন -->
+    <div class="top-bar">
+      <a href="https://manik-rmch.github.io/dashboard" class="btn-home">
+        <i class="fa-solid fa-house"></i> হোম
+      </a>
+    </div>
+
+    <!-- নেভিগেশন ট্যাব -->
+    <div class="tab-header">
+      <button class="tab-btn active" onclick="switchTab('ageTab', this)">
+        <i class="fa-solid fa-cake-candles"></i> বয়স ক্যালকুলেটর
+      </button>
+      <button class="tab-btn" onclick="switchTab('dateTimeTab', this)">
+        <i class="fa-solid fa-clock"></i> ডেট ও টাইম
+      </button>
+    </div>
+
+    <!-- ট্যাব ১: বয়স ক্যালকুলেটর -->
+    <div id="ageTab" class="tab-content active">
+      <div class="header">
+        <h2>বয়স নির্ণয়</h2>
+        <p>জন্মতারিখ দিয়ে বিস্তারিত বয়স হিসাব করুন</p>
+      </div>
+
+      <div class="input-group">
+        <label for="birthDateText"><i class="fa-regular fa-calendar-days"></i> আপনার জন্মতারিখ</label>
+        <div class="picker-wrapper">
+          <input type="text" id="birthDateText" placeholder="DD/MM/YYYY" readonly>
+          <input type="date" id="birthDate" onchange="updateDateFormat(this, 'birthDateText')">
+          <i class="fa-solid fa-chevron-down cal-icon"></i>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="targetDateText"><i class="fa-solid fa-calendar-day"></i> হিসাবের শেষ তারিখ</label>
+        <div class="picker-wrapper">
+          <input type="text" id="targetDateText" placeholder="DD/MM/YYYY" readonly>
+          <input type="date" id="targetDate" onchange="updateDateFormat(this, 'targetDateText')">
+          <i class="fa-solid fa-chevron-down cal-icon"></i>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="calculateAge()">
+        <i class="fa-solid fa-calculator"></i> বয়স বের করুন
+      </button>
+
+      <div class="result-container" id="ageResultBox">
+        <div class="result-header">আপনার বয়স:</div>
+        <div class="detailed-results">
+          <p><strong><span id="resYearsMonthsDays"></span></strong></p>
+          <p>অথবা <span id="resMonthsDays"></span></p>
+          <p>অথবা <span id="resWeeksDays"></span></p>
+          <p>অথবা <span id="resTotalDays"></span> দিন</p>
+          <p>অথবা <span id="resTotalHours"></span> ঘণ্টা</p>
+          <p>অথবা <span id="resTotalMinutes"></span> মিনিট</p>
+          <p>অথবা <span id="resTotalSeconds"></span> সেকেন্ড</p>
+        </div>
+
+        <div class="calendars-wrapper">
+          <div id="birthMonthCal" class="mini-calendar"></div>
+          <div class="dots-separator">...</div>
+          <div id="targetMonthCal" class="mini-calendar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ট্যাব ২: ডেট ও টাইম ক্যালকুলেটর -->
+    <div id="dateTimeTab" class="tab-content">
+      <div class="header">
+        <h2>ডেট ও টাইম ব্যবধান</h2>
+        <p>দুই সময়ের মধ্যবর্তী ব্যবধান বের করুন</p>
+      </div>
+
+      <div class="input-group">
+        <label for="startDateText"><i class="fa-regular fa-calendar-check"></i> প্রথম তারিখ ও সময়</label>
+        <div class="picker-wrapper">
+          <input type="text" id="startDateText" placeholder="DD/MM/YYYY hh:mm AM/PM" readonly>
+          <input type="datetime-local" id="startDate" onchange="updateDateTimeFormat(this, 'startDateText')">
+          <i class="fa-solid fa-chevron-down cal-icon"></i>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="endDateText"><i class="fa-regular fa-calendar-plus"></i> দ্বিতীয় তারিখ ও সময়</label>
+        <div class="picker-wrapper">
+          <input type="text" id="endDateText" placeholder="DD/MM/YYYY hh:mm AM/PM" readonly>
+          <input type="datetime-local" id="endDate" onchange="updateDateTimeFormat(this, 'endDateText')">
+          <i class="fa-solid fa-chevron-down cal-icon"></i>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="calculateTimeDifference()">
+        <i class="fa-solid fa-calculator"></i> হিসাব করুন
+      </button>
+
+      <div class="result-container" id="timeResultBox">
+        <div class="result-header">সময় ব্যবধান:</div>
+        <div class="result-grid">
+          <div class="result-box">
+            <div class="number" id="tDays">০</div>
+            <div class="label">দিন</div>
+          </div>
+          <div class="result-box">
+            <div class="number" id="tHours">০</div>
+            <div class="label">ঘণ্টা</div>
+          </div>
+          <div class="result-box">
+            <div class="number" id="tMins">০</div>
+            <div class="label">মিনিট</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- প্রস্তুতকারকের তথ্য -->
+    <div class="author-card">
+      <div class="author-title">প্রস্তুতকারক: মোঃ মানিক</div>
+      <div class="author-desc">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div>
+      <div class="author-mobile"><i class="fa-solid fa-phone"></i> মোবাইল: ০১৭২৯-৮১৫২৯১</div>
+    </div>
+
+  </div>
+
+  <script>
+    // পেজ লোড হলে ডিফল্ট ডেট এবং ডেট-টাইম সেট করা
+    window.onload = function() {
+      const now = new Date();
+      
+      // তারিখ সেটআপ
+      const yyyy = now.getFullYear();
+      let mm = String(now.getMonth() + 1).padStart(2, '0');
+      let dd = String(now.getDate()).padStart(2, '0');
+      document.getElementById('targetDate').value = `${yyyy}-${mm}-${dd}`;
+      document.getElementById('targetDateText').value = `${dd}/${mm}/${yyyy}`;
+
+      // ডেট-টাইম সেটআপ
+      let hours = now.getHours();
+      let minutes = String(now.getMinutes()).padStart(2, '0');
+      let dtFormat = `${yyyy}-${mm}-${dd}T${String(hours).padStart(2, '0')}:${minutes}`;
+      document.getElementById('endDate').value = dtFormat;
+      updateDateTimeFormat(document.getElementById('endDate'), 'endDateText');
+    };
+
+    // ডেট (DD/MM/YYYY) রূপান্তর
+    function updateDateFormat(inputElem, textElemId) {
+      if (!inputElem.value) return;
+      const parts = inputElem.value.split('-'); // [YYYY, MM, DD]
+      document.getElementById(textElemId).value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    // ডেট ও টাইম (DD/MM/YYYY hh:mm AM/PM) রূপান্তর
+    function updateDateTimeFormat(inputElem, textElemId) {
+      if (!inputElem.value) return;
+      const [datePart, timePart] = inputElem.value.split('T');
+      const [yyyy, mm, dd] = datePart.split('-');
+      let [hours, mins] = timePart.split(':');
+      
+      hours = parseInt(hours);
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 কে 12 বানাবে
+      const formattedHours = String(hours).padStart(2, '0');
+
+      document.getElementById(textElemId).value = `${dd}/${mm}/${yyyy} ${formattedHours}:${mins} ${ampm}`;
+    }
+
+    // ট্যাব সুইচ
+    function switchTab(tabId, element) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      element.classList.add('active');
+    }
+
+    // ১. বয়স হিসাব
+    function calculateAge() {
+      const birthVal = document.getElementById('birthDate').value;
+      const targetVal = document.getElementById('targetDate').value;
+      const resultBox = document.getElementById('ageResultBox');
+
+      if (!birthVal || !targetVal) {
+        alert('দয়া করে জন্মতারিখ নির্বাচন করুন।');
+        return;
+      }
+
+      const birthDate = new Date(birthVal);
+      const targetDate = new Date(targetVal);
+
+      if (birthDate > targetDate) {
+        alert('জন্মতারিখ শেষ তারিখের চেয়ে বড় হতে পারে না!');
+        return;
+      }
+
+      let years = targetDate.getFullYear() - birthDate.getFullYear();
+      let months = targetDate.getMonth() - birthDate.getMonth();
+      let days = targetDate.getDate() - birthDate.getDate();
+
+      if (days < 0) {
+        months--;
+        const prevMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0);
+        days += prevMonth.getDate();
+      }
+
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+
+      const diffInTime = Math.abs(targetDate - birthDate);
+      const totalDays = Math.floor(diffInTime / (1000 * 60 * 60 * 24));
+      const totalHours = totalDays * 24;
+      const totalMinutes = totalHours * 60;
+      const totalSeconds = totalMinutes * 60;
+
+      const totalMonths = (years * 12) + months;
+      const weeks = Math.floor(totalDays / 7);
+      const remDays = totalDays % 7;
+
+      const toBn = num => num.toLocaleString('bn-BD');
+
+      document.getElementById('resYearsMonthsDays').innerText = `${toBn(years)} বছর ${toBn(months)} মাস ${toBn(days)} দিন`;
+      document.getElementById('resMonthsDays').innerText = `${toBn(totalMonths)} মাস ${toBn(days)} দিন`;
+      document.getElementById('resWeeksDays').innerText = `${toBn(weeks)} সপ্তাহ ${toBn(remDays)} দিন`;
+      document.getElementById('resTotalDays').innerText = toBn(totalDays);
+      document.getElementById('resTotalHours').innerText = toBn(totalHours);
+      document.getElementById('resTotalMinutes').innerText = toBn(totalMinutes);
+      document.getElementById('resTotalSeconds').innerText = toBn(totalSeconds);
+
+      document.getElementById('birthMonthCal').innerHTML = renderMiniCalendar(birthDate);
+      document.getElementById('targetMonthCal').innerHTML = renderMiniCalendar(targetDate);
+
+      resultBox.style.display = 'block';
+    }
+
+    // ২. ডেট ও টাইম পার্থক্য হিসাব
+    function calculateTimeDifference() {
+      const startVal = document.getElementById('startDate').value;
+      const endVal = document.getElementById('endDate').value;
+      const resultBox = document.getElementById('timeResultBox');
+
+      if (!startVal || !endVal) {
+        alert('দয়া করে দুটি তারিখ এবং সময় নির্ধারণ করুন।');
+        return;
+      }
+
+      let diffInMs = Math.abs(new Date(endVal) - new Date(startVal));
+
+      const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+      diffInMs -= days * (1000 * 60 * 60 * 24);
+
+      const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+      diffInMs -= hours * (1000 * 60 * 60);
+
+      const minutes = Math.floor(diffInMs / (1000 * 60));
+
+      document.getElementById('tDays').innerText = days.toLocaleString('bn-BD');
+      document.getElementById('tHours').innerText = hours.toLocaleString('bn-BD');
+      document.getElementById('tMins').innerText = minutes.toLocaleString('bn-BD');
+
+      resultBox.style.display = 'block';
+    }
+
+    // ক্যালেন্ডার জেনারেটর
+    function renderMiniCalendar(dateObj) {
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const year = dateObj.getFullYear();
+      const month = dateObj.getMonth();
+      const highlightDay = dateObj.getDate();
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const lastDay = new Date(year, month + 1, 0).getDate();
+
+      let html = `<div class="cal-title">${monthNames[month]} ${year}</div>`;
+      html += `<table>
+        <thead>
+          <tr>
+            <th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>
+          </tr>
+        </thead>
+        <tbody><tr>`;
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        html += `<td></td>`;
+      }
+
+      let currentDay = 1;
+      let dayOfWeek = firstDayIndex;
+
+      while (currentDay <= lastDay) {
+        if (dayOfWeek === 7) {
+          html += `</tr><tr>`;
+          dayOfWeek = 0;
+        }
+
+        const isHighlight = (currentDay === highlightDay) ? 'class="highlight"' : '';
+        html += `<td ${isHighlight}>${currentDay}</td>`;
+
+        currentDay++;
+        dayOfWeek++;
+      }
+
+      while (dayOfWeek > 0 && dayOfWeek < 7) {
+        html += `<td></td>`;
+        dayOfWeek++;
+      }
+
+      html += `</tr></tbody></table>`;
+      return html;
+    }
+  </script>
+
+</body>
+</html>

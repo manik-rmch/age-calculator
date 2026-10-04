@@ -1,671 +1,264 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>মাল্টি-ক্যালকুলেটর (বয়স ও ডেট-টাইম)</title>
-  <!-- Nikosh Font & Font Awesome Icons -->
-  <link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Nikosh', 'Kalpurush', Arial, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    }
-
-    /* হোম বাটন স্টাইল */
-    .top-bar {
-      display: flex;
-      justify-content: flex-start;
-      margin-bottom: 15px;
-    }
-
-    .btn-home {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: #e2e8f0;
-      color: #334155;
-      text-decoration: none;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .btn-home:hover {
-      background: #4f46e5;
-      color: #ffffff;
-      transform: translateY(-2px);
-    }
-
-    /* ট্যাব মেনু স্টাইল */
-    .tab-header {
-      display: flex;
-      background: #e2e8f0;
-      border-radius: 12px;
-      padding: 5px;
-      margin-bottom: 25px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 17px;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .tab-btn.active {
-      background: #ffffff;
-      color: #4f46e5;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.4s ease-in-out forwards;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .header h2 {
-      color: #1e293b;
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .header p {
-      color: #64748b;
-      font-size: 15px;
-    }
-
-    .input-group {
-      margin-bottom: 18px;
-    }
-
-    .input-group label {
-      display: block;
-      margin-bottom: 6px;
-      color: #334155;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    /* কাস্টম পিকিং রাপার */
-    .picker-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .picker-wrapper input[type="text"] {
-      width: 100%;
-      padding: 12px 14px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 16px;
-      color: #1e293b;
-      outline: none;
-      background-color: #f8fafc;
-      padding-right: 40px;
-    }
-
-    .picker-wrapper input[type="date"],
-    .picker-wrapper input[type="datetime-local"] {
-      position: absolute;
-      right: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-
-    .picker-wrapper .cal-icon {
-      position: absolute;
-      right: 14px;
-      color: #64748b;
-      pointer-events: none;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
-      transition: all 0.3s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-submit:hover {
-      opacity: 0.95;
-      transform: translateY(-2px);
-    }
-
-    .result-container {
-      margin-top: 20px;
-      display: none;
-      animation: fadeIn 0.4s ease-in-out forwards;
-    }
-
-    .result-header {
-      font-size: 16px;
-      color: #64748b;
-      margin-bottom: 10px;
-      font-weight: 600;
-      text-align: left;
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .result-box {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px 6px;
-      text-align: center;
-    }
-
-    .result-box .number {
-      font-size: 24px;
-      font-weight: 700;
-      color: #4f46e5;
-    }
-
-    .result-box .label {
-      font-size: 14px;
-      color: #64748b;
-    }
-
-    .detailed-results {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 18px 20px;
-      color: #334155;
-    }
-
-    .detailed-results p {
-      margin-bottom: 8px;
-      font-size: 18px;
-      line-height: 1.6;
-    }
-
-    .detailed-results p:last-child {
-      margin-bottom: 0;
-    }
-
-    .detailed-results p strong {
-      font-size: 22px;
-      color: #4f46e5;
-    }
-
-    .calendars-wrapper {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .dots-separator {
-      font-size: 20px;
-      color: #64748b;
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
-
-    .mini-calendar {
-      width: 220px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      font-family: Arial, sans-serif;
-    }
-
-    .mini-calendar .cal-title {
-      background: #e2e8f0;
-      text-align: center;
-      padding: 6px;
-      font-size: 14px;
-      font-weight: bold;
-      color: #0f172a;
-      border-bottom: 1px solid #cbd5e1;
-    }
-
-    .mini-calendar table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-    }
-
-    .mini-calendar th {
-      background: #1e56a0;
-      color: #ffffff;
-      font-size: 12px;
-      padding: 4px 0;
-      font-weight: bold;
-    }
-
-    .mini-calendar td {
-      font-size: 13px;
-      padding: 4px 0;
-      color: #475569;
-      border: 1px solid #f1f5f9;
-    }
-
-    .mini-calendar td.highlight {
-      background-color: #facc15;
-      font-weight: bold;
-      color: #000;
-    }
-
-    /* প্রস্তুতকারক সেকশন (Footer Style) */
-    .author-card {
-      margin-top: 25px;
-      padding: 14px;
-      background: #f1f5f9;
-      border: 1.5px dashed #cbd5e1;
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .author-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-
-    .author-desc {
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.4;
-    }
-
-    .author-mobile {
-      margin-top: 6px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #4f46e5;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    
-    <!-- হোম বাটন -->
-    <div class="top-bar">
-      <a href="https://manik-rmch.github.io/dashboard" class="btn-home">
-        <i class="fa-solid fa-house"></i> হোম
-      </a>
-    </div>
-
-    <!-- নেভিগেশন ট্যাব -->
-    <div class="tab-header">
-      <button class="tab-btn active" onclick="switchTab('ageTab', this)">
-        <i class="fa-solid fa-cake-candles"></i> বয়স ক্যালকুলেটর
-      </button>
-      <button class="tab-btn" onclick="switchTab('dateTimeTab', this)">
-        <i class="fa-solid fa-clock"></i> ডেট ও টাইম
-      </button>
-    </div>
-
-    <!-- ট্যাব ১: বয়স ক্যালকুলেটর -->
-    <div id="ageTab" class="tab-content active">
-      <div class="header">
-        <h2>বয়স নির্ণয়</h2>
-        <p>জন্মতারিখ দিয়ে বিস্তারিত বয়স হিসাব করুন</p>
-      </div>
-
-      <div class="input-group">
-        <label for="birthDateText"><i class="fa-regular fa-calendar-days"></i> আপনার জন্মতারিখ</label>
-        <div class="picker-wrapper">
-          <input type="text" id="birthDateText" placeholder="DD/MM/YYYY" readonly>
-          <input type="date" id="birthDate" onchange="updateDateFormat(this, 'birthDateText')">
-          <i class="fa-solid fa-chevron-down cal-icon"></i>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label for="targetDateText"><i class="fa-solid fa-calendar-day"></i> হিসাবের শেষ তারিখ</label>
-        <div class="picker-wrapper">
-          <input type="text" id="targetDateText" placeholder="DD/MM/YYYY" readonly>
-          <input type="date" id="targetDate" onchange="updateDateFormat(this, 'targetDateText')">
-          <i class="fa-solid fa-chevron-down cal-icon"></i>
-        </div>
-      </div>
-
-      <button class="btn-submit" onclick="calculateAge()">
-        <i class="fa-solid fa-calculator"></i> বয়স বের করুন
-      </button>
-
-      <div class="result-container" id="ageResultBox">
-        <div class="result-header">আপনার বয়স:</div>
-        <div class="detailed-results">
-          <p><strong><span id="resYearsMonthsDays"></span></strong></p>
-          <p>অথবা <span id="resMonthsDays"></span></p>
-          <p>অথবা <span id="resWeeksDays"></span></p>
-          <p>অথবা <span id="resTotalDays"></span> দিন</p>
-          <p>অথবা <span id="resTotalHours"></span> ঘণ্টা</p>
-          <p>অথবা <span id="resTotalMinutes"></span> মিনিট</p>
-          <p>অথবা <span id="resTotalSeconds"></span> সেকেন্ড</p>
-        </div>
-
-        <div class="calendars-wrapper">
-          <div id="birthMonthCal" class="mini-calendar"></div>
-          <div class="dots-separator">...</div>
-          <div id="targetMonthCal" class="mini-calendar"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ট্যাব ২: ডেট ও টাইম ক্যালকুলেটর -->
-    <div id="dateTimeTab" class="tab-content">
-      <div class="header">
-        <h2>ডেট ও টাইম ব্যবধান</h2>
-        <p>দুই সময়ের মধ্যবর্তী ব্যবধান বের করুন</p>
-      </div>
-
-      <div class="input-group">
-        <label for="startDateText"><i class="fa-regular fa-calendar-check"></i> প্রথম তারিখ ও সময়</label>
-        <div class="picker-wrapper">
-          <input type="text" id="startDateText" placeholder="DD/MM/YYYY hh:mm AM/PM" readonly>
-          <input type="datetime-local" id="startDate" onchange="updateDateTimeFormat(this, 'startDateText')">
-          <i class="fa-solid fa-chevron-down cal-icon"></i>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label for="endDateText"><i class="fa-regular fa-calendar-plus"></i> দ্বিতীয় তারিখ ও সময়</label>
-        <div class="picker-wrapper">
-          <input type="text" id="endDateText" placeholder="DD/MM/YYYY hh:mm AM/PM" readonly>
-          <input type="datetime-local" id="endDate" onchange="updateDateTimeFormat(this, 'endDateText')">
-          <i class="fa-solid fa-chevron-down cal-icon"></i>
-        </div>
-      </div>
-
-      <button class="btn-submit" onclick="calculateTimeDifference()">
-        <i class="fa-solid fa-calculator"></i> হিসাব করুন
-      </button>
-
-      <div class="result-container" id="timeResultBox">
-        <div class="result-header">সময় ব্যবধান:</div>
-        <div class="result-grid">
-          <div class="result-box">
-            <div class="number" id="tDays">০</div>
-            <div class="label">দিন</div>
-          </div>
-          <div class="result-box">
-            <div class="number" id="tHours">০</div>
-            <div class="label">ঘণ্টা</div>
-          </div>
-          <div class="result-box">
-            <div class="number" id="tMins">০</div>
-            <div class="label">মিনিট</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- প্রস্তুতকারকের তথ্য -->
-    <div class="author-card">
-      <div class="author-title">প্রস্তুতকারক: মোঃ মানিক</div>
-      <div class="author-desc">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div>
-      <div class="author-mobile"><i class="fa-solid fa-phone"></i> মোবাইল: ০১৭২৯-৮১৫২৯১</div>
-    </div>
-
-  </div>
-
-  <script>
-    // পেজ লোড হলে ডিফল্ট ডেট এবং ডেট-টাইম সেট করা
-    window.onload = function() {
-      const now = new Date();
-      
-      // তারিখ সেটআপ
-      const yyyy = now.getFullYear();
-      let mm = String(now.getMonth() + 1).padStart(2, '0');
-      let dd = String(now.getDate()).padStart(2, '0');
-      document.getElementById('targetDate').value = `${yyyy}-${mm}-${dd}`;
-      document.getElementById('targetDateText').value = `${dd}/${mm}/${yyyy}`;
-
-      // ডেট-টাইম সেটআপ
-      let hours = now.getHours();
-      let minutes = String(now.getMinutes()).padStart(2, '0');
-      let dtFormat = `${yyyy}-${mm}-${dd}T${String(hours).padStart(2, '0')}:${minutes}`;
-      document.getElementById('endDate').value = dtFormat;
-      updateDateTimeFormat(document.getElementById('endDate'), 'endDateText');
-    };
-
-    // ডেট (DD/MM/YYYY) রূপান্তর
-    function updateDateFormat(inputElem, textElemId) {
-      if (!inputElem.value) return;
-      const parts = inputElem.value.split('-'); // [YYYY, MM, DD]
-      document.getElementById(textElemId).value = `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-
-    // ডেট ও টাইম (DD/MM/YYYY hh:mm AM/PM) রূপান্তর
-    function updateDateTimeFormat(inputElem, textElemId) {
-      if (!inputElem.value) return;
-      const [datePart, timePart] = inputElem.value.split('T');
-      const [yyyy, mm, dd] = datePart.split('-');
-      let [hours, mins] = timePart.split(':');
-      
-      hours = parseInt(hours);
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      hours = hours ? hours : 12; // 0 কে 12 বানাবে
-      const formattedHours = String(hours).padStart(2, '0');
-
-      document.getElementById(textElemId).value = `${dd}/${mm}/${yyyy} ${formattedHours}:${mins} ${ampm}`;
-    }
-
-    // ট্যাব সুইচ
-    function switchTab(tabId, element) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-      document.getElementById(tabId).classList.add('active');
-      element.classList.add('active');
-    }
-
-    // ১. বয়স হিসাব
-    function calculateAge() {
-      const birthVal = document.getElementById('birthDate').value;
-      const targetVal = document.getElementById('targetDate').value;
-      const resultBox = document.getElementById('ageResultBox');
-
-      if (!birthVal || !targetVal) {
-        alert('দয়া করে জন্মতারিখ নির্বাচন করুন।');
-        return;
-      }
-
-      const birthDate = new Date(birthVal);
-      const targetDate = new Date(targetVal);
-
-      if (birthDate > targetDate) {
-        alert('জন্মতারিখ শেষ তারিখের চেয়ে বড় হতে পারে না!');
-        return;
-      }
-
-      let years = targetDate.getFullYear() - birthDate.getFullYear();
-      let months = targetDate.getMonth() - birthDate.getMonth();
-      let days = targetDate.getDate() - birthDate.getDate();
-
-      if (days < 0) {
-        months--;
-        const prevMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0);
-        days += prevMonth.getDate();
-      }
-
-      if (months < 0) {
-        years--;
-        months += 12;
-      }
-
-      const diffInTime = Math.abs(targetDate - birthDate);
-      const totalDays = Math.floor(diffInTime / (1000 * 60 * 60 * 24));
-      const totalHours = totalDays * 24;
-      const totalMinutes = totalHours * 60;
-      const totalSeconds = totalMinutes * 60;
-
-      const totalMonths = (years * 12) + months;
-      const weeks = Math.floor(totalDays / 7);
-      const remDays = totalDays % 7;
-
-      const toBn = num => num.toLocaleString('bn-BD');
-
-      document.getElementById('resYearsMonthsDays').innerText = `${toBn(years)} বছর ${toBn(months)} মাস ${toBn(days)} দিন`;
-      document.getElementById('resMonthsDays').innerText = `${toBn(totalMonths)} মাস ${toBn(days)} দিন`;
-      document.getElementById('resWeeksDays').innerText = `${toBn(weeks)} সপ্তাহ ${toBn(remDays)} দিন`;
-      document.getElementById('resTotalDays').innerText = toBn(totalDays);
-      document.getElementById('resTotalHours').innerText = toBn(totalHours);
-      document.getElementById('resTotalMinutes').innerText = toBn(totalMinutes);
-      document.getElementById('resTotalSeconds').innerText = toBn(totalSeconds);
-
-      document.getElementById('birthMonthCal').innerHTML = renderMiniCalendar(birthDate);
-      document.getElementById('targetMonthCal').innerHTML = renderMiniCalendar(targetDate);
-
-      resultBox.style.display = 'block';
-    }
-
-    // ২. ডেট ও টাইম পার্থক্য হিসাব
-    function calculateTimeDifference() {
-      const startVal = document.getElementById('startDate').value;
-      const endVal = document.getElementById('endDate').value;
-      const resultBox = document.getElementById('timeResultBox');
-
-      if (!startVal || !endVal) {
-        alert('দয়া করে দুটি তারিখ এবং সময় নির্ধারণ করুন।');
-        return;
-      }
-
-      let diffInMs = Math.abs(new Date(endVal) - new Date(startVal));
-
-      const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-      diffInMs -= days * (1000 * 60 * 60 * 24);
-
-      const hours = Math.floor(diffInMs / (1000 * 60 * 60));
-      diffInMs -= hours * (1000 * 60 * 60);
-
-      const minutes = Math.floor(diffInMs / (1000 * 60));
-
-      document.getElementById('tDays').innerText = days.toLocaleString('bn-BD');
-      document.getElementById('tHours').innerText = hours.toLocaleString('bn-BD');
-      document.getElementById('tMins').innerText = minutes.toLocaleString('bn-BD');
-
-      resultBox.style.display = 'block';
-    }
-
-    // ক্যালেন্ডার জেনারেটর
-    function renderMiniCalendar(dateObj) {
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      const year = dateObj.getFullYear();
-      const month = dateObj.getMonth();
-      const highlightDay = dateObj.getDate();
-
-      const firstDayIndex = new Date(year, month, 1).getDay();
-      const lastDay = new Date(year, month + 1, 0).getDate();
-
-      let html = `<div class="cal-title">${monthNames[month]} ${year}</div>`;
-      html += `<table>
-        <thead>
-          <tr>
-            <th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th>
-          </tr>
-        </thead>
-        <tbody><tr>`;
-
-      for (let i = 0; i < firstDayIndex; i++) {
-        html += `<td></td>`;
-      }
-
-      let currentDay = 1;
-      let dayOfWeek = firstDayIndex;
-
-      while (currentDay <= lastDay) {
-        if (dayOfWeek === 7) {
-          html += `</tr><tr>`;
-          dayOfWeek = 0;
-        }
-
-        const isHighlight = (currentDay === highlightDay) ? 'class="highlight"' : '';
-        html += `<td ${isHighlight}>${currentDay}</td>`;
-
-        currentDay++;
-        dayOfWeek++;
-      }
-
-      while (dayOfWeek > 0 && dayOfWeek < 7) {
-        html += `<td></td>`;
-        dayOfWeek++;
-      }
-
-      html += `</tr></tbody></table>`;
-      return html;
-    }
-  </script>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>মাল্টি-ক্যালকুলেটর (বয়স ও ডেট-টাইম)</title>
+<link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0px; padding: 0px; font-family: Nikosh, Kalpurush, Arial, sans-serif; }
+
+body { background: linear-gradient(135deg, rgb(79, 70, 229) 0%, rgb(124, 58, 237) 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+
+.container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; width: 100%; max-width: 480px; box-shadow: rgba(0, 0, 0, 0.25) 0px 20px 40px; }
+
+.top-bar { display: flex; justify-content: flex-start; margin-bottom: 15px; }
+
+.btn-home { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: rgb(226, 232, 240); color: rgb(51, 65, 85); text-decoration: none; font-size: 15px; font-weight: 600; border-radius: 8px; transition: 0.3s; }
+
+.btn-home:hover { background: rgb(79, 70, 229); color: rgb(255, 255, 255); transform: translateY(-2px); }
+
+.tab-header { display: flex; background: rgb(226, 232, 240); border-radius: 12px; padding: 5px; margin-bottom: 25px; }
+
+.tab-btn { flex: 1 1 0%; padding: 10px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: transparent; color: rgb(100, 116, 139); font-size: 17px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+.tab-btn.active { background: rgb(255, 255, 255); color: rgb(79, 70, 229); box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 12px; }
+
+.tab-content { display: none; animation: 0.4s ease-in-out 0s 1 normal forwards running fadeIn; }
+
+.tab-content.active { display: block; }
+
+@keyframes fadeIn { 
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0px); }
+}
+
+.header { text-align: center; margin-bottom: 20px; }
+
+.header h2 { color: rgb(30, 41, 59); font-size: 24px; font-weight: 700; }
+
+.header p { color: rgb(100, 116, 139); font-size: 15px; }
+
+.input-group { margin-bottom: 18px; }
+
+.input-group label { display: block; margin-bottom: 6px; color: rgb(51, 65, 85); font-size: 16px; font-weight: 600; }
+
+.picker-wrapper { position: relative; display: flex; align-items: center; }
+
+.picker-wrapper input[type="text"] { width: 100%; padding: 12px 40px 12px 14px; border: 2px solid rgb(226, 232, 240); border-radius: 10px; font-size: 16px; color: rgb(30, 41, 59); outline: none; background-color: rgb(248, 250, 252); }
+
+.picker-wrapper input[type="date"], .picker-wrapper input[type="datetime-local"] { position: absolute; right: 0px; top: 0px; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+.picker-wrapper .cal-icon { position: absolute; right: 14px; color: rgb(100, 116, 139); pointer-events: none; }
+
+.btn-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, rgb(79, 70, 229) 0%, rgb(124, 58, 237) 100%); color: rgb(255, 255, 255); border-width: medium; border-style: none; border-color: currentcolor; border-image: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: rgba(79, 70, 229, 0.25) 0px 8px 16px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+.btn-submit:hover { opacity: 0.95; transform: translateY(-2px); }
+
+.result-container { margin-top: 20px; display: none; animation: 0.4s ease-in-out 0s 1 normal forwards running fadeIn; }
+
+.result-header { font-size: 16px; color: rgb(100, 116, 139); margin-bottom: 10px; font-weight: 600; text-align: left; }
+
+.result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+.result-box { background: rgb(241, 245, 249); border: 1px solid rgb(226, 232, 240); border-radius: 10px; padding: 12px 6px; text-align: center; }
+
+.result-box .number { font-size: 24px; font-weight: 700; color: rgb(79, 70, 229); }
+
+.result-box .label { font-size: 14px; color: rgb(100, 116, 139); }
+
+.detailed-results { background: rgb(248, 250, 252); border: 1px solid rgb(226, 232, 240); border-radius: 12px; padding: 18px 20px; color: rgb(51, 65, 85); }
+
+.detailed-results p { margin-bottom: 8px; font-size: 18px; line-height: 1.6; }
+
+.detailed-results p:last-child { margin-bottom: 0px; }
+
+.detailed-results p strong { font-size: 22px; color: rgb(79, 70, 229); }
+
+.calendars-wrapper { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+.dots-separator { font-size: 20px; color: rgb(100, 116, 139); font-weight: bold; letter-spacing: 2px; }
+
+.mini-calendar { width: 220px; border: 1px solid rgb(203, 213, 225); background: rgb(255, 255, 255); border-radius: 4px; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 5px; font-family: Arial, sans-serif; }
+
+.mini-calendar .cal-title { background: rgb(226, 232, 240); text-align: center; padding: 6px; font-size: 14px; font-weight: bold; color: rgb(15, 23, 42); border-bottom: 1px solid rgb(203, 213, 225); }
+
+.mini-calendar table { width: 100%; border-collapse: collapse; text-align: center; }
+
+.mini-calendar th { background: rgb(30, 86, 160); color: rgb(255, 255, 255); font-size: 12px; padding: 4px 0px; font-weight: bold; }
+
+.mini-calendar td { font-size: 13px; padding: 4px 0px; color: rgb(71, 85, 105); border: 1px solid rgb(241, 245, 249); }
+
+.mini-calendar td.highlight { background-color: rgb(250, 204, 21); font-weight: bold; color: rgb(0, 0, 0); }
+
+.author-card { margin-top: 25px; padding: 14px; background: rgb(241, 245, 249); border: 1.5px dashed rgb(203, 213, 225); border-radius: 12px; text-align: center; }
+
+.author-title { font-size: 17px; font-weight: 700; color: rgb(30, 41, 59); margin-bottom: 4px; }
+
+.author-desc { font-size: 14px; color: rgb(71, 85, 105); line-height: 1.4; }
+
+.author-mobile { margin-top: 6px; font-size: 16px; font-weight: 700; color: rgb(79, 70, 229); }
+.f{display:block;margin-bottom:16px;padding:8px 14px;border:2px solid #e2e8f0;border-radius:10px;background:#f8fafc;cursor:text}
+.f .l{display:block;font-size:16px;font-weight:600;color:#334155}
+.f input{width:100%;border:0;background:transparent;font-size:19px;color:#1e293b;outline:0;padding:3px 0}
+.f:focus-within{border-color:#4f46e5;box-shadow:0 0 0 3px #e0e7ff}
+.row2{display:flex;align-items:center;gap:8px}
+.ap{display:flex;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;flex:none}
+.ap button{border:0;background:#fff;color:#64748b;font-size:14px;font-weight:700;padding:6px 10px;cursor:pointer}
+.ap button.on{background:#4f46e5;color:#fff}
+.now{margin-top:2px;border:0;background:none;color:#4f46e5;font-size:14px;font-weight:600;cursor:pointer;padding:2px 0}
+.grp{margin-bottom:16px}
+.grp>.l{display:block;font-size:16px;font-weight:600;color:#334155;margin-bottom:6px}
+.pair{display:grid;grid-template-columns:1.1fr 1fr;gap:10px}
+.pair .f{margin:0;min-width:0}
+.f .s{display:block;font-size:13px;color:#64748b}
+.pair input{font-size:18px;min-width:0}
+.ap button{padding:5px 7px}
+.err{color:#dc2626;font-weight:600;min-height:0;margin:-6px 0 8px}
+.mini-calendar td.e{border-color:transparent}
+.result-container{margin-top:6px}
+:root{--cal:#4f46e5}
+.cal-pop{position:absolute;z-index:1000;width:300px;background:#fff;border:1px solid #d9dde2;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.22);padding:12px;font-size:15px;color:#333;text-align:left}
+.cal-hd{display:flex;gap:4px;align-items:center;margin-bottom:8px}
+.cal-hd button{flex:none;width:28px;height:30px;border:0;border-radius:6px;background:#f1f3f5;cursor:pointer;font-size:16px;color:#333}
+.cal-hd button:hover{background:#e3e7ea}
+.cal-hd select{flex:1;min-width:0;height:30px;border:1px solid #ccc;border-radius:6px;font-size:14px;background:#fff;padding:0 2px;cursor:pointer;color:#333}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-g b{font-size:12px;color:#888;padding:4px 0}
+.cal-g button{height:34px;border:0;border-radius:6px;background:none;cursor:pointer;font-size:15px;color:#222}
+.cal-g button:hover{background:#eef1f4}
+.cal-g .tod{box-shadow:inset 0 0 0 1px var(--cal)}
+.cal-g .sel,.cal-g .sel:hover{background:var(--cal);color:#fff}
+.cal-ft{display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid #eee;padding-top:6px}
+.cal-ft button{border:0;background:none;color:var(--cal);font-size:14px;font-weight:700;cursor:pointer;padding:4px 8px}
+@media(min-width:900px) and (hover:hover) and (pointer:fine){
+body{align-items:flex-start}
+.container{max-width:1120px;padding:32px 40px}
+.tab-header{max-width:480px;margin-left:auto;margin-right:auto}
+.tab-content.active{display:grid;grid-template-columns:minmax(340px,430px) 1fr;column-gap:40px;align-items:start}
+.tab-content.active>.header{grid-column:1/-1}
+.tab-content.active>.f,.tab-content.active>.grp,.tab-content.active>.err{grid-column:1}
+.tab-content.active>.result-container{grid-column:2;grid-row:2/span 4;margin-top:0}
+.calendars-wrapper{flex-direction:row;justify-content:center;align-items:flex-start}
+.mini-calendar{width:250px}
+.detailed-results{display:grid;grid-template-columns:1fr 1fr;gap:2px 28px;padding:14px 20px}
+.detailed-results p{margin:4px 0}
+.detailed-results p:first-child{grid-column:1/-1}
+.calendars-wrapper{margin-top:14px}
+}
+</style></head><body><div class="container">
+<div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a></div>
+
+<div class="tab-header"><button class="tab-btn active" data-t="ageTab">🎂 বয়স ক্যালকুলেটর</button><button class="tab-btn" data-t="dateTimeTab">⏱ ডেট ও টাইম</button></div>
+<div id="ageTab" class="tab-content active">
+<div class="header"><h2>বয়স নির্ণয়</h2><p>জন্মতারিখ দিয়ে বিস্তারিত বয়স হিসাব করুন</p></div>
+<label class="f"><span class="l">📅 আপনার জন্মতারিখ</span><input type="text" id="bd" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"></label>
+<label class="f"><span class="l">📆 হিসাবের শেষ তারিখ</span><input type="text" id="td" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"></label>
+<p class="err" id="ageMsg"></p>
+<div class="result-container" id="ageRes"><div class="result-header">আপনার বয়স:</div>
+<div class="detailed-results"><p><strong id="r1"></strong></p><p>অথবা <span id="r2"></span></p><p>অথবা <span id="r3"></span></p><p>অথবা <span id="r4"></span> দিন</p><p>অথবা <span id="r5"></span> ঘণ্টা</p><p>অথবা <span id="r6"></span> মিনিট</p><p>অথবা <span id="r7"></span> সেকেন্ড</p></div>
+<div class="calendars-wrapper"><div id="c1" class="mini-calendar"></div><div class="dots-separator">...</div><div id="c2" class="mini-calendar"></div></div></div>
+</div>
+<div id="dateTimeTab" class="tab-content">
+<div class="header"><h2>ডেট ও টাইম ব্যবধান</h2><p>দুই সময়ের মধ্যবর্তী ব্যবধান বের করুন</p></div>
+<div class="grp"><span class="l">🕘 প্রথম তারিখ ও সময়</span><div class="pair">
+<label class="f"><span class="s">তারিখ</span><input type="text" id="dd1" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"></label>
+<label class="f"><span class="s">সময়</span><div class="row2"><input type="text" id="tm1" inputmode="numeric" autocomplete="off" placeholder="hh:mm"><span class="ap" id="ap1"><button type="button" class="on">AM</button><button type="button">PM</button></span></div></label>
+</div><button type="button" class="now" data-i="1">এখনকার তারিখ ও সময় দিন</button></div>
+<div class="grp"><span class="l">🕘 দ্বিতীয় তারিখ ও সময়</span><div class="pair">
+<label class="f"><span class="s">তারিখ</span><input type="text" id="dd2" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"></label>
+<label class="f"><span class="s">সময়</span><div class="row2"><input type="text" id="tm2" inputmode="numeric" autocomplete="off" placeholder="hh:mm"><span class="ap" id="ap2"><button type="button" class="on">AM</button><button type="button">PM</button></span></div></label>
+</div><button type="button" class="now" data-i="2">এখনকার তারিখ ও সময় দিন</button></div>
+<p class="err" id="dtMsg"></p>
+<div class="result-container" id="dtRes"><div class="result-header">সময় ব্যবধান:</div><div class="result-grid">
+<div class="result-box"><div class="number" id="tD">০</div><div class="label">দিন</div></div>
+<div class="result-box"><div class="number" id="tH">০</div><div class="label">ঘণ্টা</div></div>
+<div class="result-box"><div class="number" id="tM">০</div><div class="label">মিনিট</div></div></div></div>
+</div>
+<div class="author-card"><div class="author-title">প্রস্তুতকারক: মোঃ মানিক</div><div class="author-desc">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div><div class="author-mobile">মোবাইল: ০১৭২৯-৮১৫২৯১</div></div>
+</div><script>var BN="০১২৩৪৫৬৭৮৯",MN=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"],BADD="সঠিক তারিখ দিন, যেমন ০৭/০৫/২০২৫";
+function $(i){return document.getElementById(i)}
+function bn(n){return String(n).replace(/\d/g,function(d){return BN[d]})}
+function en(s){return s.replace(/[০-৯]/g,function(c){return BN.indexOf(c)})}
+function grp(n){var s=String(n),l=s.slice(-3),r=s.slice(0,-3);return bn(r?r.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+l:l)}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function setV(el,v){el.value=v;el._p=v}
+function maskEl(el,L,S){var pv=el._p||"",nv=en(el.value),c=el.selectionStart,T=L.reduce(function(a,b){return a+b}),z=function(x){return x==="_"||/\d/.test(x)},i,t,k=0,n=0,q=0,raw,pos,o="",p=0,s;
+if(c==null)c=nv.length;var re=Math.max(0,pv.length-(nv.length-c)),a=0;
+while(a<c&&a<re&&pv[a]===nv[a])a++;
+var ins=nv.slice(a,c).replace(/\D/g,""),rem=re-a,del=!ins&&rem>0;
+if(del){if(!/\d/.test(pv.slice(a,re))){i=a-1;while(i>=0&&!/\d/.test(pv[i]))i--;if(i>=0){a=i;re=i+1}else re=a}
+if(re>a){raw=/[0-9_]/.test(pv.slice(re))?pv.slice(0,a)+pv.slice(a,re).replace(/\d/g,"_")+pv.slice(re):pv.slice(0,a)+pv.slice(re)}else raw=pv;pos=a}
+else if(ins){t=a;while(t<pv.length&&!z(pv[t]))t++;var full=(pv.match(/\d/g)||[]).length>=T&&pv.indexOf("_")<0;
+if(rem===0&&ins.length===1&&t<pv.length&&(pv[t]==="_"||full)){raw=pv.slice(0,t)+ins+pv.slice(t+1);pos=t+1}else{raw=pv.slice(0,a)+ins+pv.slice(re);pos=a+ins.length}}
+else{raw=nv;pos=c}
+var v=raw.replace(/[^0-9_]/g,"").slice(0,T).replace(/_+$/,"");
+for(i=0;i<Math.min(pos,raw.length);i++)if(z(raw[i]))k++;
+for(i=0;i<L.length;i++){s=v.slice(p,p+L[i]);if(!s)break;o+=s;p+=L[i];if(s.length===L[i]&&i<L.length-1&&(p<v.length||!del))o+=S[i]}
+for(;q<o.length&&n<k;q++)if(z(o[q]))n++;
+if(!del)while(q<o.length&&!z(o[q])&&k>0)q++;
+setV(el,o);try{el.setSelectionRange(q,q)}catch(e){}}
+function D(s){var m=/^(\d\d)\/(\d\d)\/(\d{4})$/.exec(s);if(!m)return(s.length<10||s.indexOf("_")>=0)?null:false;var d=+m[1],o=+m[2]-1,y=+m[3];return(y<1900||y>2100||o>11||d<1||d>dim(y,o))?false:{y:y,m:o,d:d}}
+function fmtD(o){return bn(o.d)+" "+MN[o.m]+" "+bn(o.y)}
+function two(n){return("0"+n).slice(-2)}
+function dstr(o){return two(o.d)+"/"+two(o.m+1)+"/"+o.y}
+function today(){var t=new Date();return{y:t.getFullYear(),m:t.getMonth(),d:t.getDate()}}
+function days(a,b){return Math.round((Date.UTC(b.y,b.m,b.d)-Date.UTC(a.y,a.m,a.d))/864e5)}
+function ymd(a,b){var y=b.y-a.y,m=b.m-a.m,d=b.d-a.d;if(d<0){m--;d+=b.m?dim(b.y,b.m-1):31}if(m<0){y--;m+=12}return{y:y,m:m,d:d}}
+function onDate(id,fn){var el=$(id);el.addEventListener("input",function(){maskEl(el,[2,2,4],["/","/"]);if(fn)fn()})}
+function boxClick(){document.querySelectorAll(".f").forEach(function(b){b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&e.target!==i&&e.target.tagName!=="BUTTON")i.focus()})})}
+
+var WD=["রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র","শনি"];
+function cal(o){var f=new Date(o.y,o.m,1).getDay(),n=dim(o.y,o.m),h='<div class="cal-title">'+MN[o.m]+" "+bn(o.y)+"</div><table><tr>"+WD.map(function(w){return"<th>"+w+"</th>"}).join("")+"</tr><tr>",c=0,i;
+for(i=0;i<f;i++,c++)h+='<td class="e"></td>';
+for(i=1;i<=n;i++,c++){if(c%7===0&&i>1)h+="</tr><tr>";h+="<td"+(i===o.d?' class="highlight"':"")+">"+bn(i)+"</td>"}
+for(;c%7;c++)h+='<td class="e"></td>';return h+"</tr></table>"}
+function ageRun(){var b=D($("bd").value),t=D($("td").value),box=$("ageRes"),m=$("ageMsg");box.style.display="none";m.textContent="";
+if(b===false||t===false){m.textContent=BADD;return}if(!b||!t)return;
+var n=days(b,t);if(n<0){m.textContent="শেষ তারিখ জন্মতারিখের আগে হতে পারে না।";return}
+var r=ymd(b,t);$("r1").textContent=bn(r.y)+" বছর "+bn(r.m)+" মাস "+bn(r.d)+" দিন";$("r2").textContent=bn(r.y*12+r.m)+" মাস "+bn(r.d)+" দিন";$("r3").textContent=bn(Math.floor(n/7))+" সপ্তাহ "+bn(n%7)+" দিন";
+$("r4").textContent=grp(n);$("r5").textContent=grp(n*24);$("r6").textContent=grp(n*1440);$("r7").textContent=grp(n*86400);
+$("c1").innerHTML=cal(b);$("c2").innerHTML=cal(t);box.style.display="block"}
+function pm(i){return $("ap"+i).querySelector(".on").textContent==="PM"}
+function dtv(i){var d=D($("dd"+i).value),t=$("tm"+i).value,m=/^(\d\d):(\d\d)$/.exec(t);if(d===false||(!m&&t.length===5&&t.indexOf("_")<0))return false;if(!d||!m)return null;var h=+m[1],mi=+m[2];if(h<1||h>12||mi>59)return false;return new Date(d.y,d.m,d.d,h%12+(pm(i)?12:0),mi)}
+function dtRun(){var a=dtv(1),b=dtv(2),box=$("dtRes"),m=$("dtMsg");box.style.display="none";m.textContent="";
+if(a===false||b===false){m.textContent="সঠিক তারিখ ও সময় দিন, যেমন ০৭/০৫/২০২৫ ০৯:৩০";return}if(!a||!b)return;
+var t=Math.round(Math.abs(b-a)/6e4);$("tD").textContent=bn(Math.floor(t/1440));$("tH").textContent=bn(Math.floor(t%1440/60));$("tM").textContent=bn(t%60);box.style.display="block"}
+setV($("td"),dstr(today()));
+onDate("bd",ageRun);onDate("td",ageRun);
+[1,2].forEach(function(i){onDate("dd"+i,dtRun);var el=$("tm"+i);el.addEventListener("input",function(e){maskEl(el,[2,2],[":"]);dtRun()});
+$("ap"+i).addEventListener("click",function(e){if(e.target.tagName!=="BUTTON")return;[].forEach.call(this.children,function(b){b.classList.toggle("on",b===e.target)});dtRun()})});
+document.querySelectorAll(".now").forEach(function(b){b.addEventListener("click",function(){var i=b.dataset.i,n=new Date(),h=n.getHours();setV($("dd"+i),dstr({y:n.getFullYear(),m:n.getMonth(),d:n.getDate()}));setV($("tm"+i),two(h%12||12)+":"+two(n.getMinutes()));[].forEach.call($("ap"+i).children,function(x){x.classList.toggle("on",x.textContent===(h>=12?"PM":"AM"))});dtRun()})});
+document.querySelectorAll(".tab-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".tab-btn").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab-content").forEach(function(x){x.classList.toggle("active",x.id===b.dataset.t)})})});
+boxClick();ageRun();
+window.attachCal=function(){};
+(function(){
+if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+var WD=["শনি","রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র"],pop,cur,vy,vm,LO=1930,HI=2100;
+function render(){var t=today(),s=D(cur.value),i,h='<div class="cal-hd"><button type="button" data-a="py" title="গত বছর">«</button><button type="button" data-a="pm" title="গত মাস">‹</button><select data-a="m">';
+for(i=0;i<12;i++)h+='<option value="'+i+'"'+(i===vm?" selected":"")+">"+MN[i]+"</option>";
+h+='</select><select data-a="y">';for(i=LO;i<=HI;i++)h+='<option value="'+i+'"'+(i===vy?" selected":"")+">"+bn(i)+"</option>";
+h+='</select><button type="button" data-a="nm" title="পরের মাস">›</button><button type="button" data-a="ny" title="পরের বছর">»</button></div><div class="cal-g">';
+WD.forEach(function(w){h+="<b>"+w+"</b>"});
+var off=(new Date(vy,vm,1).getDay()+1)%7,n=dim(vy,vm);
+for(i=0;i<off;i++)h+="<span></span>";
+for(i=1;i<=n;i++){var c=(s&&s.y===vy&&s.m===vm&&s.d===i?" sel":"")+(t.y===vy&&t.m===vm&&t.d===i?" tod":"");h+='<button type="button" data-d="'+i+'" class="'+c+'">'+bn(i)+"</button>"}
+pop.innerHTML=h+'</div><div class="cal-ft"><button type="button" data-a="t">আজ</button><button type="button" data-a="x">মুছুন</button></div>'}
+function close(){if(pop)pop.style.display="none";cur=null}
+function pick(o){var el=cur;setV(el,o?dstr(o):"");el.dispatchEvent(new Event("input",{bubbles:true}));close()}
+function go(d){var t=vy*12+vm+d,y=Math.floor(t/12);if(y<LO||y>HI)return;vy=y;vm=t-y*12}
+function build(){pop=document.createElement("div");pop.className="cal-pop";pop.style.display="none";
+pop.addEventListener("mousedown",function(e){if(!/SELECT|OPTION/.test(e.target.tagName))e.preventDefault()});
+pop.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var a=b.dataset.a;if(b.dataset.d)return pick({y:vy,m:vm,d:+b.dataset.d});
+if(a==="py")vy=Math.max(LO,vy-1);else if(a==="ny")vy=Math.min(HI,vy+1);else if(a==="pm")go(-1);else if(a==="nm")go(1);else if(a==="t")return pick(today());else if(a==="x")return pick(null);render()});
+pop.addEventListener("change",function(e){var a=e.target.dataset.a;if(a==="m")vm=+e.target.value;if(a==="y")vy=+e.target.value;render()});
+document.body.appendChild(pop);
+document.addEventListener("mousedown",function(e){if(!cur)return;var bx=cur.closest(".f")||cur;if(!pop.contains(e.target)&&!bx.contains(e.target))close()});
+document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"))close()})}
+function open(el){if(!pop)build();cur=el;var s=D(el.value),t=today();if(s){vy=s.y;vm=s.m}else{vy=Math.max(LO,Math.min(HI,t.y+(el._dy||0)));vm=t.m}
+render();var b=(el.closest(".f")||el).getBoundingClientRect();pop.style.display="block";
+var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+document.documentElement.clientWidth-w-8),tp=b.bottom+scrollY+4;
+if(b.bottom+h+8>innerHeight&&b.top>h+8)tp=b.top+scrollY-h-4;
+pop.style.left=Math.max(8,l)+"px";pop.style.top=tp+"px"}
+window.attachCal=function(id,dy){var el=$(id);el._dy=dy||0;(el.closest(".f")||el).addEventListener("click",function(){open(el)});
+el.addEventListener("input",function(){if(cur===el){var s=D(el.value);if(s){vy=s.y;vm=s.m}render()}})}
+})();
+attachCal("bd");attachCal("td");attachCal("dd1");attachCal("dd2");
+</script></body></html>

@@ -221,7 +221,7 @@ function dtv(i){var d=D($("dd"+i).value),t=$("tm"+i).value,m=/^(\d\d):(\d\d)$/.e
 function dtRun(){var a=dtv(1),b=dtv(2),box=$("dtRes"),m=$("dtMsg");box.style.display="none";m.textContent="";
 if(a===false||b===false){m.textContent="সঠিক তারিখ ও সময় দিন, যেমন ০৭/০৫/২০২৫ ০৯:৩০";return}if(!a||!b)return;
 var t=Math.round(Math.abs(b-a)/6e4);$("tD").textContent=bn(Math.floor(t/1440));$("tH").textContent=bn(Math.floor(t%1440/60));$("tM").textContent=bn(t%60);box.style.display="block"}
-setV($("td"),dstr(today()));
+
 onDate("bd",ageRun);onDate("td",ageRun);
 [1,2].forEach(function(i){onDate("dd"+i,dtRun);var el=$("tm"+i);el.addEventListener("input",function(e){maskEl(el,[2,2],[":"]);dtRun()});
 $("ap"+i).addEventListener("click",function(e){if(e.target.tagName!=="BUTTON")return;[].forEach.call(this.children,function(b){b.classList.toggle("on",b===e.target)});dtRun()})});
@@ -258,7 +258,7 @@ var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+docum
 if(b.bottom+h+8>innerHeight&&b.top>h+8)tp=b.top+scrollY-h-4;
 pop.style.left=Math.max(8,l)+"px";pop.style.top=tp+"px"}
 window.attachCal=function(id,dy){var el=$(id);el._dy=dy||0;(el.closest(".f")||el).addEventListener("click",function(){open(el)});
-el.addEventListener("input",function(){if(cur===el){var s=D(el.value);if(s){vy=s.y;vm=s.m}render()}})}
+el.addEventListener("input",function(){if(cur===el){if(D(el.value)){close();return}render()}})}
 })();
 attachCal("bd");attachCal("td");attachCal("dd1");attachCal("dd2");
 </script></body></html>

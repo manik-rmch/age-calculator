@@ -287,6 +287,10 @@ $("ap"+i).addEventListener("click",function(e){if(e.target.tagName!=="BUTTON")re
 document.querySelectorAll(".now").forEach(function(b){b.addEventListener("click",function(){var i=b.dataset.i,n=new Date(),h=n.getHours();setV($("dd"+i),dstr({y:n.getFullYear(),m:n.getMonth(),d:n.getDate()}));setV($("tm"+i),two(h%12||12)+":"+two(n.getMinutes()));[].forEach.call($("ap"+i).children,function(x){x.classList.toggle("on",x.textContent===(h>=12?"PM":"AM"))});dtRun()})});
 document.querySelectorAll(".tab-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".tab-btn").forEach(function(x){x.classList.toggle("active",x===b)});document.querySelectorAll(".tab-content").forEach(function(x){x.classList.toggle("active",x.id===b.dataset.t)})})});
 boxClick();ageRun();
+/* জন্মতারিখে Enter চাপলে "হিসাবের শেষ তারিখ" ঘরে যাবে */
+$("bd").setAttribute("enterkeyhint","next");$("td").setAttribute("enterkeyhint","done");
+$("bd").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.isComposing){e.preventDefault();var t=$("td");t.focus();try{t.select()}catch(x){}}});
+$("td").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.isComposing){e.preventDefault();this.blur()}});
 window.attachCal=function(){};
 (function(){
 if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
@@ -310,7 +314,7 @@ if(a==="py")vy=Math.max(LO,vy-1);else if(a==="ny")vy=Math.min(HI,vy+1);else if(a
 pop.addEventListener("change",function(e){var a=e.target.dataset.a;if(a==="m")vm=+e.target.value;if(a==="y")vy=+e.target.value;render()});
 document.body.appendChild(pop);
 document.addEventListener("mousedown",function(e){if(!cur)return;var bx=cur.closest(".f")||cur;if(!pop.contains(e.target)&&!bx.contains(e.target))close()});
-document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"))close()})}
+document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"||e.key==="Enter"))close()})}
 function open(el){if(!pop)build();cur=el;var s=D(el.value),t=today();if(s){vy=s.y;vm=s.m}else{vy=Math.max(LO,Math.min(HI,t.y+(el._dy||0)));vm=t.m}
 render();var b=(el.closest(".f")||el).getBoundingClientRect();pop.style.display="block";
 var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+document.documentElement.clientWidth-w-8),tp=b.bottom+scrollY+4;
